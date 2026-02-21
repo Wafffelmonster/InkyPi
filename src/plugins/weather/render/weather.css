@@ -17,7 +17,7 @@
 }
 
 .header {
-  height: min(30cqh, 6cqi);
+  height: 8dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
 }
 
 .current-date {
-  font-size: min(30cqh, 6cqi);
+  font-size: 8dvh;
   text-align: center;
   align-content: end;
   width: 100%;
@@ -187,7 +187,7 @@
   justify-content: space-evenly;
   align-items: center;
   width: 100%;
-  gap: 1.5dvw;
+  gap: 1dvw;
   overflow: hidden;
 }
 
@@ -195,12 +195,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1dvh 1vw;
+  padding: 0.5dvh 0.8vw;
   border: 1px solid;
   border-radius: 1.2vw;
   min-width: 0;
   max-height: 100%;
-  gap: 0.5dvh;
+  gap: 0.3dvh;
 }
 
 .forecast-day-name {
@@ -235,7 +235,8 @@
   min-height: 0;
   min-width: 0;
   height: 100%;
-  font-size: min(3dvh, 2.5vw);
+  font-size: min(3.5dvh, 3vw);
+  font-weight: bold;
 }
 
 .low .high {
