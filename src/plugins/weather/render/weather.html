@@ -141,18 +141,19 @@
       return '💧💧💧';                          // > 6mm: heavy
     } else {
       // mm
-      if (rainAmount < 0.5) return '';           // < 1mm
+      if (rainAmount < 0.25) return '';           // < 1mm
       if (rainAmount < 2.5) return '💧';         // 1-3mm: light
-      if (rainAmount < 10) return '💧💧';       // 3-6mm: moderate
-      return '💧💧💧';                          // > 6mm: heavy
+      if (rainAmount < 10) return '💦';       // 3-6mm: moderate
+      return '🌊';                          // > 6mm: heavy
     }
   }
 
   Chart.register({
     id: 'annotationRain',
     afterDatasetsDraw(chart, args, pluginOptions) {
-      const { ctx } = chart;
+      const { ctx, chartArea } = chart;
       const rainData = pluginOptions.precipitationData || [];
+      const precipitationData = pluginOptions.precipitation || [];
       const meta = chart.getDatasetMeta(0); // Now the first (and only) dataset
 
       ctx.save();
@@ -165,16 +166,10 @@
 
         if (rainIcon) {
           const x = bar.x;
-          const y = bar.y;
-          const base = bar.base;
-          const height = base - y;
-
-          let iconY;
-          if (height < 30) {
-            iconY = y - 12; // Above bar
-          } else {
-            iconY = y + 18; // Inside bar
-          }
+          const precipValue = precipitationData[i] || 0;
+          // Position icon slightly above the precipitation bar
+          const yScale = chart.scales.y;
+          const iconY = yScale.getPixelForValue(precipValue + 10);
 
           ctx.fillStyle = "{{ plugin_settings.textColor }}";
           ctx.fillText(rainIcon, x, iconY);
@@ -291,7 +286,10 @@
   plugins: {
     legend: { display: false },
     {% if plugin_settings.displayRain == "true" %}
-    annotationRain: { precipitationData: rain }
+    annotationRain: {
+      precipitationData: rain,
+      precipitation: precipitation
+    }
     {% endif %}
   },
   elements: {
