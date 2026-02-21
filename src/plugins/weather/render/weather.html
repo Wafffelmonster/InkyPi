@@ -97,52 +97,62 @@
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
 
-    // Extract hourly temperature and labels from template variables
+    // Extract hourly data from template variables
     const labels = [{% for hour in hourly_forecast %}"{{ hour.time }}"{% if not loop.last %}, {% endif %} {% endfor %}];
-  const temperatures = [{% for hour in hourly_forecast %}{ { hour.temperature } } {% if not loop.last %}, {% endif %} {% endfor %}];
   const precipitation = [{% for hour in hourly_forecast %}{ { hour.precipitation * 100 } } {% if not loop.last %}, {% endif %} {% endfor %}]; // Convert to percentage
   const rain = [{% for hour in hourly_forecast %}{ { hour.rain or 0 } } {% if not loop.last %}, {% endif %} {% endfor %}];
   const weatherIconsPaths = [{% for hour in hourly_forecast %}"{{ hour.icon | replace('\\', '/') }}"{% if not loop.last %}, {% endif %} {% endfor %}];
   const iconStep = parseInt("{{ plugin_settings.graphIconStep or 2 }}");
   const units = document.getElementById('units-container').dataset.units;
   const isImperial = units === "imperial";
-  const unit = isImperial ? "in" : "mm";
-  const threshold = isImperial ? 0.0035 : 0.09;
 
-  // Find min and max temperatures
-  const minTemp = Math.min(...temperatures);
-  var maxTemp = Math.max(...temperatures);
+  // Function to get rain icon based on amount
+  function getRainIcon(rainAmount) {
+    if (isImperial) {
+      // inches
+      if (rainAmount < 0.04) return '';        // < 1mm
+      if (rainAmount < 0.12) return '💧';      // 1-3mm: light
+      if (rainAmount < 0.24) return '💧💧';    // 3-6mm: moderate
+      return '💧💧💧';                          // > 6mm: heavy
+    } else {
+      // mm
+      if (rainAmount < 0.5) return '';           // < 1mm
+      if (rainAmount < 2.5) return '💧';         // 1-3mm: light
+      if (rainAmount < 10) return '💧💧';       // 3-6mm: moderate
+      return '💧💧💧';                          // > 6mm: heavy
+    }
+  }
 
   Chart.register({
     id: 'annotationRain',
     afterDatasetsDraw(chart, args, pluginOptions) {
       const { ctx } = chart;
       const rainData = pluginOptions.precipitationData || [];
-      const meta = chart.getDatasetMeta(1);
+      const meta = chart.getDatasetMeta(0); // Now the first (and only) dataset
 
       ctx.save();
       ctx.textAlign = 'center';
+      ctx.font = '16px Arial'; // Emoji font size
 
       meta.data.forEach((bar, i) => {
         const rainAmount = rainData[i];
-        if (rainAmount && rainAmount > threshold) {
+        const rainIcon = getRainIcon(rainAmount);
+
+        if (rainIcon) {
           const x = bar.x;
           const y = bar.y;
           const base = bar.base;
           const height = base - y;
 
-          let textY, unitY;
-
-          if (height < 25) {
-            textY = y - 10;
-            unitY = y - 3;
+          let iconY;
+          if (height < 30) {
+            iconY = y - 12; // Above bar
           } else {
-            textY = y + 13;
-            unitY = y + 20;
+            iconY = y + 18; // Inside bar
           }
+
           ctx.fillStyle = "{{ plugin_settings.textColor }}";
-          ctx.fillText(rainAmount.toFixed(2), x, textY);
-          ctx.fillText(unit, x, unitY);
+          ctx.fillText(rainIcon, x, iconY);
         }
       });
 
@@ -179,35 +189,25 @@
   {% endif %}
 
   const chart = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels: labels,
-      datasets: [{
-        type: 'line',
-        label: 'Hourly Temperature',
-        data: temperatures,
-        borderColor: 'rgba(241, 122, 36, 0.9)', // Line color
-        borderWidth: 2,
-        pointRadius: 0, // Hide points
-        fill: true, // Enable filling the area under the line
-        tension: 0.5
-      },
-      {
-        type: 'bar',
-        label: 'Precipitation Probability',
-        data: precipitation,
-        borderColor: 'rgba(26, 111, 176, 1)', // Semi-transparent blue
-        borderWidth: {
-          top: 2,
-          right: 0,
-          bottom: 0,
-          left: 0
-        },
-        yAxisID: 'y1',
-        barPercentage: 1.0, // Ensures full width
-        categoryPercentage: 1.0,  // Ensures full width
-        fill: true, // Enable filling the area under the line
-      }
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Precipitation Probability',
+          data: precipitation,
+          borderColor: 'rgba(26, 111, 176, 1)',
+          borderWidth: {
+            top: 2,
+            right: 0,
+            bottom: 0,
+            left: 0
+          },
+          barPercentage: 1.0,
+          categoryPercentage: 1.0,
+          fill: true,
+        }
       ]
     },
     options: {
@@ -227,8 +227,8 @@
       ticks: {
         autoSkip: true,
           padding: 10,
-            maxRotation: 0, // Prevent label rotation
-              minRotation: 0, // Prevent label rotation
+            maxRotation: 0,
+              minRotation: 0,
                 color: "{{ plugin_settings.textColor }}",
                   font: {
           family: 'Jost'
@@ -236,7 +236,7 @@
       },
       grid: {
         tickLength: 0,
-          display: false // Hide x-axis grid
+          display: false
       },
       offset: true,
         gridLines: {
@@ -244,24 +244,6 @@
             }
     },
     y: {
-      ticks: {
-        padding: 5,
-          color: "{{ plugin_settings.textColor }}",
-            font: {
-          family: 'Jost'
-        },
-        autoSkip: false,
-          callback: function(value, index, values) {
-            if (index === values.length - 1) return (units != "standard") ? maxTemp + "°" : maxTemp;
-            else if (index === 0) return (units != "standard") ? minTemp + "°" : minTemp;
-            else return '';
-          }
-      },
-      grid: { display: false },
-      min: minTemp,
-        max: maxTemp,
-          },
-    y1: {
       position: 'right',
         grid: { display: false },
       ticks: {
@@ -297,24 +279,15 @@
 
   chart.update();
 
-  // Now, after the chart is created, we can access the scales
-  const gradientStart = chart.scales['y'].getPixelForValue(maxTemp); // Max temperature
-  const gradientEnd = chart.scales['y'].getPixelForValue(minTemp);   // Min temperature
+  // Create gradient for precipitation bars
+  const gradientStart = chart.scales['y'].getPixelForValue(100); // Max precipitation (100%)
+  const gradientEnd = chart.scales['y'].getPixelForValue(0);     // Min precipitation (0%)
 
-  // Create gradient based on y-axis values
-  const tempGradient = ctx.createLinearGradient(0, gradientStart, 0, gradientEnd + 10);
-  tempGradient.addColorStop(0, 'rgba(252,204,5, 0.95)'); // Top of the gradient (max temperature)
-  tempGradient.addColorStop(1, 'rgba(252,204,5, 0.01)'); // Bottom of the gradient (min temperature)
-
-  // Update the chart to apply the gradient
-  chart.data.datasets[0].backgroundColor = tempGradient;
-
-  // Create gradient based on y-axis values
   const precipitationGradient = ctx.createLinearGradient(0, gradientStart, 0, gradientEnd);
-  precipitationGradient.addColorStop(0, 'rgba(26, 111, 176, 0.8)'); // Top of the gradient (max temperature)
-  precipitationGradient.addColorStop(1, 'rgba(194, 223, 246, 0)'); // Bottom of the gradient (min temperature)
+  precipitationGradient.addColorStop(0, 'rgba(26, 111, 176, 0.8)');    // Top (high precipitation)
+  precipitationGradient.addColorStop(1, 'rgba(194, 223, 246, 0.2)');   // Bottom (low precipitation)
 
-  chart.data.datasets[1].backgroundColor = precipitationGradient;
+  chart.data.datasets[0].backgroundColor = precipitationGradient;
 
   chart.update();
   });
