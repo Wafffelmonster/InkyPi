@@ -10,7 +10,9 @@
   {% endif %}
   <!-- Current Date -->
   <div class="header">
+    {% if title != "" %}
     <div class="title">{{ title }}</div>
+    {% endif %}
     <div class="current-date">{{ current_date }}</div>
   </div>
 
