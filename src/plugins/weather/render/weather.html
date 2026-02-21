@@ -1,8 +1,5 @@
-{% extends "plugin.html" %}
-
-{% block content %}
+{% extends "plugin.html" %} {% block content %}
 <div id="units-container" data-units="{{ units }}"></div>
-
 
 <div class="weather-dashboard">
   {% if plugin_settings.displayRefreshTime == "true" %}
@@ -20,67 +17,95 @@
     <!-- Current Weather Row -->
     <div class="current-temperature">
       <!-- Icon + Temperature -->
-      <img class="current-icon" src="{{current_day_icon}}" alt="Current Weather Icon">
+      <img
+        class="current-icon"
+        src="{{current_day_icon}}"
+        alt="Current Weather Icon"
+      />
       <div class="current-weather">
-        <div class="current-temp">{{ current_temperature }}<span class="temperature-unit">{{temperature_unit}}</span>
+        <div class="current-temp">
+          {{ current_temperature }}<span class="temperature-unit"
+            >{{temperature_unit}}</span
+          >
         </div>
-        <div class="feels-like">Feels Like {{ feels_like }}{% if units != "standard" %}°{% endif %}</div>
-        <div class="min-max">{{ forecast[0].high }}{% if units != "standard" %}°{% endif %} / {{ forecast[0].low }}{% if
-          units != "standard" %}°{% endif %}</div>
+        <div class="feels-like">
+          Feels Like {{ feels_like }}{% if units != "standard" %}°{% endif %}
+        </div>
+        <div class="min-max">
+          {{ forecast[0].high }}{% if units != "standard" %}°{% endif %} / {{
+          forecast[0].low }}{% if units != "standard" %}°{% endif %}
+        </div>
       </div>
     </div>
 
     <!-- Data Points Grid (Sunset, Wind, UV, etc.) -->
-    {% if plugin_settings.displayMetrics and plugin_settings.displayMetrics == "true" %}
+    {% if plugin_settings.displayMetrics and plugin_settings.displayMetrics ==
+    "true" %}
     <div class="data-points">
-      {% for dp in data_points %}
-      {% if dp.label not in ["Pressure", "Visibility"] %}
+      {% for dp in data_points %} {% if dp.label not in ["Pressure",
+      "Visibility"] %}
       <div
-        class="data-point column-container {% if dp.label in ['Sunrise', 'Sunset', 'Wind', 'Humidity'] %}no-label{% endif %}">
+        class="data-point column-container {% if dp.label in ['Sunrise', 'Sunset', 'Wind', 'Humidity'] %}no-label{% endif %}"
+      >
         <div class="data-point-img-container">
-          <img class="data-point-icon" src="{{dp.icon}}" alt="{{ dp.label }}">
+          <img class="data-point-icon" src="{{dp.icon}}" alt="{{ dp.label }}" />
         </div>
         <div class="data-point-data">
           {% if dp.label not in ['Sunrise', 'Sunset', 'Wind', 'Humidity'] %}
           <div class="data-point-label">{{ dp.label }}</div>
           {% endif %}
           <div class="data-point-measurement">
-            {{ dp.measurement }}{% if dp.unit %}<span class="data-point-unit">{{ dp.unit }}</span>{% endif %}
-            {% if dp.label == "Wind" %}
+            {{ dp.measurement }}{% if dp.unit %}<span class="data-point-unit"
+              >{{ dp.unit }}</span
+            >{% endif %} {% if dp.label == "Wind" %}
             <span class="wind-arrow-symbol">{{ dp.arrow }}</span>
             {% endif %}
           </div>
         </div>
       </div>
-      {% endif %}
-      {% endfor %}
+      {% endif %} {% endfor %}
     </div>
     {% endif %}
   </div>
 
   <!-- Hourly Temperature Graph -->
-  {% if plugin_settings.displayGraph and plugin_settings.displayGraph == "true" %}
+  {% if plugin_settings.displayGraph and plugin_settings.displayGraph == "true"
+  %}
   <div class="chart-container">
     <canvas id="hourlyTemperatureChart"></canvas>
   </div>
   {% endif %}
 
   <!-- Forecast Row -->
-  {% if plugin_settings.displayForecast and plugin_settings.displayForecast == "true" %}
+  {% if plugin_settings.displayForecast and plugin_settings.displayForecast ==
+  "true" %}
   <div class="forecast">
     {% for day in forecast[1:(plugin_settings.forecastDays | int) + 1] %}
     <div class="forecast-day">
       <div class="forecast-day-name">{{ day.day }}</div>
-      <img class="forecast-icon" src="{{day.icon}}" alt="{{ day.day }} Weather Icon">
+      <img
+        class="forecast-icon"
+        src="{{day.icon}}"
+        alt="{{ day.day }} Weather Icon"
+      />
       <div class="forecast-temps">
-        <span class="high">{{ day.high }}{% if units != "standard" %}°{% endif %}</span> /
-        <span class="low">{{ day.low }}{% if units != "standard" %}°{% endif %}</span>
+        <span class="high"
+          >{{ day.high }}{% if units != "standard" %}°{% endif %}</span
+        >
+        /
+        <span class="low"
+          >{{ day.low }}{% if units != "standard" %}°{% endif %}</span
+        >
       </div>
       {% if plugin_settings.moonPhase and plugin_settings.moonPhase == "true" %}
       <div class="separator"></div>
       <div class="moon-phase-container">
-        <img class="moon-phase-icon" src="{{day.moon_phase_icon}}" alt="Moon phase icon">
-        <span style="flex: 1;">{{day.moon_phase_pct}} %</span>
+        <img
+          class="moon-phase-icon"
+          src="{{day.moon_phase_icon}}"
+          alt="Moon phase icon"
+        />
+        <span style="flex: 1">{{day.moon_phase_pct}} %</span>
       </div>
       {% endif %}
     </div>
@@ -98,10 +123,10 @@
     const rect = canvas.getBoundingClientRect();
 
     // Extract hourly data from template variables
-    const labels = [{% for hour in hourly_forecast %}"{{ hour.time }}"{% if not loop.last %}, {% endif %} {% endfor %}];
-  const precipitation = [{% for hour in hourly_forecast %}{ { hour.precipitation * 100 } } {% if not loop.last %}, {% endif %} {% endfor %}]; // Convert to percentage
-  const rain = [{% for hour in hourly_forecast %}{ { hour.rain or 0 } } {% if not loop.last %}, {% endif %} {% endfor %}];
-  const weatherIconsPaths = [{% for hour in hourly_forecast %}"{{ hour.icon | replace('\\', '/') }}"{% if not loop.last %}, {% endif %} {% endfor %}];
+    const labels = [{% for hour in hourly_forecast %}"{{ hour.time }}"{% if not loop.last %},{% endif %}{% endfor %}];
+  const precipitation = [{% for hour in hourly_forecast %}{{ hour.precipitation * 100 }}{% if not loop.last %},{% endif %}{% endfor %}]; // Convert to percentage
+  const rain = [{% for hour in hourly_forecast %}{{ hour.rain or 0 }}{% if not loop.last %},{% endif %}{% endfor %}];
+  const weatherIconsPaths = [{% for hour in hourly_forecast %}"{{ hour.icon | replace('\\', '/') }}"{% if not loop.last %},{% endif %}{% endfor %}];
   const iconStep = parseInt("{{ plugin_settings.graphIconStep or 2 }}");
   const units = document.getElementById('units-container').dataset.units;
   const isImperial = units === "imperial";
@@ -215,7 +240,7 @@
         padding: {
           top: {% if plugin_settings.displayGraphIcons == "true" %}3{% else %}0{% endif %},
     bottom: {% if plugin_settings.displayGraphIcons == "true" %}11{% else %}0{% endif %}
-		  }
+    }
         },
   animation: {
     duration: 0, // general animation time
