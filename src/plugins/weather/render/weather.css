@@ -17,7 +17,7 @@
 }
 
 .header {
-  height: 19dvh;
+  height: 15dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -40,6 +40,7 @@
 }
 
 .title {
+  display: none;
   font-size: min(50cqh, 8cqi);
   text-align: center;
   align-content: end;
@@ -49,8 +50,8 @@
   height: 100%;
 }
 
-.current-date {
-  font-size: min(30cqh, 6cqi);
+.current-date {  
+  font-size: min(40cqh, 7cqi);
   text-align: center;
   align-content: end;
   width: 100%;
