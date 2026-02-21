@@ -49,7 +49,7 @@
 }
 
 .current-date {
-  font-size: min(50cqh, 8cqi);
+  font-size: min(30cqh, 6cqi);
   text-align: center;
   align-content: end;
   width: 100%;
@@ -159,7 +159,17 @@
 
 /* Larger measurement when no label */
 .data-point.no-label .data-point-measurement {
-  font-size: min(70cqh, 40cqi);
+  font-size: min(60cqh, 35cqi);
+  height: 100%;
+}
+
+.data-point.no-label .data-point-unit {
+  font-size: min(60cqh, 35cqi);
+  height: 100%;
+}
+
+.data-point.no-label .wind-arrow-symbol {
+  font-size: min(60cqh, 35cqi);
   height: 100%;
 }
 
